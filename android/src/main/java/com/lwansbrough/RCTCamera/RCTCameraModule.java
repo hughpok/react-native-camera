@@ -533,12 +533,14 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
                 camera.stopPreview();
                 camera.startPreview();
 
-                AsyncTask.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        processImage(new MutableImage(data), options, promise);
-                    }
-                });
+//                 AsyncTask.execute(new Runnable() {
+//                     @Override
+//                     public void run() {
+//                         processImage(new MutableImage(data), options, promise);
+//                     }
+//                 });
+                ProcessImageTask processTask = new ProcessImageTask();
+                processTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new MutableImage(data), options, promise);
 
                 mSafeToCapture = true;
             }
@@ -791,4 +793,14 @@ public class RCTCameraModule extends ReactContextBaseJavaModule
         }
     }
 
+    class ProcessImageTask extends AsyncTask {
+        @Override
+        protected Object doInBackground(Object... params) {
+            MutableImage image = (MutableImage)params[0];
+            ReadableMap options = (ReadableMap)params[1];
+            Promise promise = (Promise) params[2];
+            processImage(image, options, promise);
+            return null;
+        }
+    }
 }
